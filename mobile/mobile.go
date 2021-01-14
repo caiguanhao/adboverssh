@@ -8,20 +8,20 @@ import (
 )
 
 var (
-	adbAddress, listen, sshAddr, sshUser, privKey string
+	adbAddress, sshListen, sshAddress, sshUser, sshPrivKey string
 )
 
 func Run() {
-	Start(adbAddress, listen, sshAddr, sshUser, privKey)
+	Start(adbAddress, sshListen, sshAddress, sshUser, sshPrivKey)
 }
 
-func Start(adbAddress, listen, sshAddr, sshUser, privKey string) {
+func Start(adbAddress, sshListen, sshAddress, sshUser, sshPrivKey string) {
 	c := &adboverssh.Client{
 		ADBAddress:              adbAddress,
-		SSHListenAddress:        listen,
-		SSHServerAddress:        sshAddr,
+		SSHListenAddress:        sshListen,
+		SSHServerAddress:        sshAddress,
 		SSHServerUser:           sshUser,
-		SSHServerUserPrivateKey: []byte(privKey),
+		SSHServerUserPrivateKey: []byte(sshPrivKey),
 		SSHConnectTimeout:       5 * time.Second,
 		OnConnected: func(addr string) {
 			log.Println("connected to", addr)

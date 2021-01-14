@@ -1,4 +1,5 @@
 /adboverssh
 /cmd/adboverssh/adboverssh
+mobile/key.go
 id_rsa
 id_rsa.pub

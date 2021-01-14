@@ -33,3 +33,5 @@ On your SSH server:
 adb connect 127.0.0.1:35651
 adb shell
 ```
+
+You can run `go run ./cmd/generatekey` to generate `mobile/key.go` file.
