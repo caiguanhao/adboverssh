@@ -34,4 +34,12 @@ adb connect 127.0.0.1:35651
 adb shell
 ```
 
-You can run `go run ./cmd/generatekey` to generate `mobile/key.go` file.
+## mobile
+
+This package can be built into an Android AAR file using `gomobile bind`.
+
+To build this package with your ssh private key and configs,
+run `go run ./cmd/generatekey` to generate `mobile/key.go`.
+
+Build this project, add the AAR file to your Android project,
+then you can use the `adboverssh.Adboverssh.startDefaultClient();` method.

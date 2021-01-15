@@ -9,14 +9,29 @@ import (
 
 var (
 	adbAddress, sshListen, sshAddress, sshUser, sshPrivKey string
+
+	currentClient *adboverssh.Client
 )
 
-func Run() {
-	Start(adbAddress, sshListen, sshAddress, sshUser, sshPrivKey)
+func StartDefaultClient() {
+	StartClient(adbAddress, sshListen, sshAddress, sshUser, sshPrivKey)
 }
 
-func Start(adbAddress, sshListen, sshAddress, sshUser, sshPrivKey string) {
-	c := &adboverssh.Client{
+func StartClient(adbAddress, sshListen, sshAddress, sshUser, sshPrivKey string) {
+	currentClient = newClient(adbAddress, sshListen, sshAddress, sshUser, sshPrivKey)
+	currentClient.Connect()
+}
+
+func Stop() {
+	if currentClient == nil {
+		return
+	}
+	currentClient.Stop()
+	log.Println("stopped")
+}
+
+func newClient(adbAddress, sshListen, sshAddress, sshUser, sshPrivKey string) *adboverssh.Client {
+	return &adboverssh.Client{
 		ADBAddress:              adbAddress,
 		SSHListenAddress:        sshListen,
 		SSHServerAddress:        sshAddress,
@@ -35,9 +50,5 @@ func Start(adbAddress, sshListen, sshAddress, sshUser, sshPrivKey string) {
 		OnError: func(err error) {
 			log.Println(err)
 		},
-	}
-	for {
-		c.Connect()
-		time.Sleep(2 * time.Second)
 	}
 }

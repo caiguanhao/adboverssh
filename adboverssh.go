@@ -22,6 +22,10 @@ type (
 		OnListening     func(string)
 		OnNewConnection func(string, string)
 		OnError         func(error)
+
+		sshClient   *ssh.Client
+		sshListener net.Listener
+		clients     []net.Conn
 	}
 
 	sshDialResult struct {
@@ -30,40 +34,57 @@ type (
 	}
 )
 
-func (c *Client) Connect() error {
-	conn, err := c.dial()
+func (c *Client) Stop() {
+	for i := 0; i < len(c.clients); i++ {
+		c.clients[i].Close()
+	}
+	if c.sshListener != nil {
+		c.sshListener.Close()
+	}
+	if c.sshClient != nil {
+		c.sshClient.Close()
+	}
+}
+
+func (c *Client) Connect() (err error) {
+	c.sshClient, err = c.dial()
 	if err != nil {
 		if c.OnError != nil {
 			c.OnError(err)
 		}
 		return err
 	}
-	defer conn.Close()
+	defer c.sshClient.Close()
 
 	if c.OnConnected != nil {
 		c.OnConnected(c.SSHServerAddress)
 	}
 
-	listener, err := conn.Listen("tcp", c.SSHListenAddress)
+	c.sshListener, err = c.sshClient.Listen("tcp", c.SSHListenAddress)
 	if err != nil {
 		if c.OnError != nil {
 			c.OnError(err)
 		}
 		return err
 	}
-	defer listener.Close()
+	defer c.sshListener.Close()
 
 	if c.OnListening != nil {
-		c.OnListening(listener.Addr().String())
+		c.OnListening(c.sshListener.Addr().String())
 	}
 
 	for {
-		if err := c.accept(listener); err != nil {
-			if c.OnError != nil {
-				c.OnError(err)
-			}
-			time.Sleep(1 * time.Second)
+		err = c.accept(c.sshListener)
+		if err == nil {
+			continue
 		}
+		if err == io.EOF {
+			return
+		}
+		if c.OnError != nil {
+			c.OnError(err)
+		}
+		time.Sleep(1 * time.Second)
 	}
 }
 
@@ -72,6 +93,7 @@ func (c *Client) accept(listener net.Listener) error {
 	if err != nil {
 		return err
 	}
+	c.clients = append(c.clients, client)
 	defer client.Close()
 
 	adbInAndroid, err := net.Dial("tcp", c.ADBAddress)
