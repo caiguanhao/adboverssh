@@ -10,8 +10,14 @@ import (
 var (
 	adbAddress, sshListen, sshAddress, sshUser, sshPrivKey string
 
+	currentAddress string
+
 	currentClient *adboverssh.Client
 )
+
+func GetCurrentAddress() string {
+	return currentAddress
+}
 
 func StartDefaultClient() {
 	StartClient(adbAddress, sshListen, sshAddress, sshUser, sshPrivKey)
@@ -42,6 +48,7 @@ func newClient(adbAddress, sshListen, sshAddress, sshUser, sshPrivKey string) *a
 			log.Println("connected to", addr)
 		},
 		OnListening: func(addr string) {
+			currentAddress = addr
 			log.Println("listening", addr)
 		},
 		OnNewConnection: func(a, b string) {
