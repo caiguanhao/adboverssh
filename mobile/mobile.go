@@ -33,6 +33,7 @@ func Stop() {
 		return
 	}
 	currentClient.Stop()
+	currentAddress = ""
 	log.Println("stopped")
 }
 
